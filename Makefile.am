@@ -1,19 +1,20 @@
 AM_DISTCHECK_CONFIGURE_FLAGS = \
 	--with-westonplugindir="$$dc_install_base/$(westonplugindir)" \
-	--with-orbmentplugindir="$$dc_install_base/$(orbmentplugindir)" \
 	$(null)
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 AM_MAKEFLAGS = --no-print-directory
 
-dist_pkgdata_DATA =
-noarch_pkgconfig_DATA =
+westonmodule_LTLIBRARIES =
 
 EXTRA_DIST = \
 	autogen.sh \
 	README.md \
 	$(null)
-CLEANFILES =
+CLEANFILES = \
+	$(dist_pkgdata_DATA:.xml=-server-protocol.h) \
+	$(dist_pkgdata_DATA:.xml=-client-protocol.h) \
+	$(null)
 
 
 AM_CPPFLAGS += \
@@ -22,8 +23,7 @@ AM_CPPFLAGS += \
 	$(null)
 
 AM_CFLAGS += \
-	-I $(srcdir)/src/ \
-	-I $(builddir)/src/ \
+	$(WESTON_CFLAGS) \
 	$(null)
 
 MODULES_LDFLAGS = \
@@ -32,37 +32,41 @@ MODULES_LDFLAGS = \
 	-shared \
 	$(null)
 
-lib_LTLIBRARIES =
-pkginclude_HEADERS =
-pkgconfig_DATA =
 
-dist_pkgdata_DATA += \
-	protocol/notification-area-unstable-v1.xml \
+# notification-area
+westonmodule_LTLIBRARIES += weston-notification-area.la
+CLEANFILES += $(nodist_weston_notification_area_la_SOURCES)
+
+weston_notification_area_la_SOURCES = \
+	src/notification-area.c \
 	$(null)
 
-noarch_pkgconfig_DATA += \
-	pkgconfig/wayland-wall.pc \
+nodist_weston_notification_area_la_SOURCES = \
+	src/unstable/notification-area/notification-area-unstable-v1-protocol.c \
+	src/unstable/notification-area/notification-area-unstable-v1-server-protocol.h \
 	$(null)
 
-CLEANFILES += \
-	$(dist_pkgdata_DATA:.xml=-protocol.c) \
-	$(dist_pkgdata_DATA:.xml=-server-protocol.h) \
-	$(dist_pkgdata_DATA:.xml=-client-protocol.h) \
+weston_notification_area_la_LDFLAGS = \
+	$(AM_LDFLAGS) \
+	$(MODULES_LDFLAGS) \
 	$(null)
 
-include weston/weston.mk
-include wlc/wlc.mk
-include orbment/orbment.mk
+weston_notification_area_la_LIBADD = \
+	$(WESTON_LIBS) \
+	$(null)
+
+weston-notification-area.la src/weston_notification_area_la-notification-area.lo: src/unstable/notification-area/notification-area-unstable-v1-server-protocol.h
+
 
 # Wayland protocol code generation rules
-src/%-protocol.c: protocol/%.xml
-	$(AM_V_GEN)$(WAYLAND_SCANNER) code < $< > $@
+src/%-protocol.c: $(wwprotocoldir)/%.xml
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(WAYLAND_SCANNER) code < $< > $@
 
-src/%-server-protocol.h: protocol/%.xml
-	$(AM_V_GEN)$(WAYLAND_SCANNER) server-header < $< > $@
+src/%-server-protocol.h: $(wwprotocoldir)/%.xml
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(WAYLAND_SCANNER) server-header < $< > $@
 
-src/%-client-protocol.h: protocol/%.xml
-	$(AM_V_GEN)$(WAYLAND_SCANNER) client-header < $< > $@
+src/%-client-protocol.h: $(wwprotocoldir)/%.xml
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(WAYLAND_SCANNER) client-header < $< > $@
 
 -include local-rules.mk
 
@@ -71,7 +75,7 @@ src/%-client-protocol.h: protocol/%.xml
 #
 
 install-data-hook: la-files-install-hook
-uninstall-libLTLIBRARIES uninstall-westonpluginLTLIBRARIES uninstall-orbmentpluginLTLIBRARIES uninstall-hook: la-files-uninstall-hook
+uninstall-westonmoduleLTLIBRARIES uninstall-hook: la-files-uninstall-hook
 
 ww_remove_la = $(if $(strip $($(1)_LTLIBRARIES)),( cd $(DESTDIR)$($(1)dir) && rm -f $($(1)_LTLIBRARIES) ))
 ww_remove_so_from_la = $(if $(strip $($(1)_LTLIBRARIES)),for la in $($(1)_LTLIBRARIES); do \
@@ -80,13 +84,9 @@ ww_remove_so_from_la = $(if $(strip $($(1)_LTLIBRARIES)),for la in $($(1)_LTLIBR
 
 # *.la files cleanup
 la-files-install-hook:
-	$(call ww_remove_la,lib)
-	$(call ww_remove_la,westonplugin)
-	$(call ww_remove_la,orbmentplugin)
+	$(call ww_remove_la,westonmoduledir)
 
 # Remove shared object files at uninstall since
 # we remove *.la files at install
 la-files-uninstall-hook:
-	$(call ww_remove_so_from_la,lib)
-	$(call ww_remove_so_from_la,westonplugin)
-	$(call ww_remove_so_from_la,orbmentplugin)
+	$(call ww_remove_so_from_la,westonmoduledir)
