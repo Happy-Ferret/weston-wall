@@ -144,7 +144,17 @@ _weston_notification_area_set_output(struct weston_notification_area *na, struct
     pixman_rectangle32_t workarea = { 0, 0, 0, 0 };
     na->output = output;
     if ( na->output != NULL )
-        na->compositor->shell_interface.get_output_work_area(na->compositor->shell_interface.shell, na->output, &workarea);
+    {
+        if ( na->compositor->shell_interface.get_output_work_area != NULL )
+            na->compositor->shell_interface.get_output_work_area(na->compositor->shell_interface.shell, na->output, &workarea);
+        else
+        {
+            workarea.x = na->output->x;
+            workarea.y = na->output->y;
+            workarea.width = na->output->width;
+            workarea.height = na->output->height;
+        }
+    }
 
     if ( ( na->workarea.x == workarea.x ) && ( na->workarea.y == workarea.y ) && ( na->workarea.width == workarea.width ) && ( na->workarea.height == workarea.height ) )
         return;
