@@ -34,28 +34,28 @@ MODULES_LDFLAGS = \
 
 
 # notification-area
-westonmodule_LTLIBRARIES += weston-notification-area.la
+westonmodule_LTLIBRARIES += notification-area.la
 CLEANFILES += $(nodist_weston_notification_area_la_SOURCES)
 
-weston_notification_area_la_SOURCES = \
+notification_area_la_SOURCES = \
 	src/notification-area.c \
 	$(null)
 
-nodist_weston_notification_area_la_SOURCES = \
+nodist_notification_area_la_SOURCES = \
 	src/unstable/notification-area/notification-area-unstable-v1-protocol.c \
 	src/unstable/notification-area/notification-area-unstable-v1-server-protocol.h \
 	$(null)
 
-weston_notification_area_la_LDFLAGS = \
+notification_area_la_LDFLAGS = \
 	$(AM_LDFLAGS) \
 	$(MODULES_LDFLAGS) \
 	$(null)
 
-weston_notification_area_la_LIBADD = \
+notification_area_la_LIBADD = \
 	$(WESTON_LIBS) \
 	$(null)
 
-weston-notification-area.la src/weston_notification_area_la-notification-area.lo: src/unstable/notification-area/notification-area-unstable-v1-server-protocol.h
+notification-area.la src/notification-area.lo: src/unstable/notification-area/notification-area-unstable-v1-server-protocol.h
 
 
 # Wayland protocol code generation rules
