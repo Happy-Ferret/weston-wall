@@ -209,7 +209,7 @@ _weston_notification_area_output_created(struct wl_listener *listener, void *dat
 static void
 _weston_notification_area_output_destroyed(struct wl_listener *listener, void *data)
 {
-    struct weston_notification_area *na = wl_container_of(listener, na, output_created_listener);
+    struct weston_notification_area *na = wl_container_of(listener, na, output_destroyed_listener);
     struct weston_output *output = data;
 
     if ( na->output == output )
@@ -219,7 +219,7 @@ _weston_notification_area_output_destroyed(struct wl_listener *listener, void *d
 static void
 _weston_notification_area_output_moved(struct wl_listener *listener, void *data)
 {
-    struct weston_notification_area *na = wl_container_of(listener, na, output_created_listener);
+    struct weston_notification_area *na = wl_container_of(listener, na, output_moved_listener);
     struct weston_output *output = data;
 
     if ( na->output == output )
