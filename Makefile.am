@@ -57,6 +57,30 @@ notification_area_la_LIBADD = \
 
 notification-area.la src/notification-area.lo: src/unstable/notification-area/notification-area-unstable-v1-server-protocol.h
 
+# background
+westonmodule_LTLIBRARIES += background.la
+CLEANFILES += $(nodist_background_la_SOURCES)
+
+background_la_SOURCES = \
+	src/background.c \
+	$(null)
+
+nodist_background_la_SOURCES = \
+	src/unstable/background/background-unstable-v1-protocol.c \
+	src/unstable/background/background-unstable-v1-server-protocol.h \
+	$(null)
+
+background_la_LDFLAGS = \
+	$(AM_LDFLAGS) \
+	$(MODULES_LDFLAGS) \
+	$(null)
+
+background_la_LIBADD = \
+	$(WESTON_LIBS) \
+	$(null)
+
+background.la src/background.lo: src/unstable/background/background-unstable-v1-server-protocol.h
+
 
 # Wayland protocol code generation rules
 src/%-protocol.c: $(wwprotocoldir)/%.xml
