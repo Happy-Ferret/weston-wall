@@ -172,6 +172,7 @@ _weston_background_set_background(struct wl_client *client, struct wl_resource *
             return;
         }
         self->output = woutput;
+        wl_list_insert(&back->outputs, &self->link);
     }
     else
         weston_view_destroy(self->view);
@@ -183,7 +184,6 @@ _weston_background_set_background(struct wl_client *client, struct wl_resource *
     self->surface_destroyed_listener.notify = _weston_background_output_surface_destroyed;
     wl_signal_add(&self->surface->destroy_signal, &self->surface_destroyed_listener);
 
-    wl_list_insert(&back->outputs, &self->link);
     weston_layer_entry_insert(&back->layer.view_list, &self->view->layer_link);
 
     _weston_background_output_update_transform(self);
