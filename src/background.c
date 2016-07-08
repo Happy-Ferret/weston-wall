@@ -58,6 +58,7 @@ struct weston_background_output {
     struct weston_transform transform;
     enum zww_background_v1_fit_method fit_method;
     struct wl_listener surface_destroy_listener;
+    struct wl_listener view_destroy_listener;
 };
 
 static struct weston_background_output *
@@ -130,7 +131,8 @@ retry:
 static void
 _weston_background_output_free(struct weston_background_output *self)
 {
-    weston_view_destroy(self->view);
+    if ( self->view != NULL )
+        weston_view_destroy(self->view);
 
     wl_list_remove(&self->surface_destroy_listener.link);
 
@@ -145,6 +147,14 @@ _weston_background_output_surface_destroyed(struct wl_listener *listener, void *
     struct weston_background_output *self = wl_container_of(listener, self, surface_destroy_listener);
 
     _weston_background_output_free(self);
+}
+
+static void
+_weston_background_output_view_destroyed(struct wl_listener *listener, void *data)
+{
+    struct weston_background_output *self = wl_container_of(listener, self, view_destroy_listener);
+
+    self->view = NULL;
 }
 
 static void
@@ -176,6 +186,7 @@ _weston_background_set_background(struct wl_client *client, struct wl_resource *
         self->output = woutput;
         wl_list_insert(&back->outputs, &self->link);
         self->surface_destroy_listener.notify = _weston_background_output_surface_destroyed;
+        self->view_destroy_listener.notify = _weston_background_output_view_destroyed;
     }
     else
     {
@@ -188,6 +199,7 @@ _weston_background_set_background(struct wl_client *client, struct wl_resource *
     self->fit_method = fit_method;
 
     wl_signal_add(&self->surface->destroy_signal, &self->surface_destroy_listener);
+    wl_signal_add(&self->view->destroy_signal, &self->view_destroy_listener);
 
     weston_layer_entry_insert(&back->layer.view_list, &self->view->layer_link);
 
