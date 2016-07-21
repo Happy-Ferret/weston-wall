@@ -122,19 +122,35 @@ _weston_notification_area_create_notification(struct wl_client *client, struct w
     if (weston_surface_set_role(surface, "ww_notification", resource, ZWW_NOTIFICATION_AREA_V1_ERROR_ROLE) < 0)
         return;
 
-    struct weston_notification_area_notification *notification;
-    notification = zalloc(sizeof(struct weston_notification_area_notification));
-    if ( notification == NULL ) {
+    struct weston_notification_area_notification *self;
+    self = zalloc(sizeof(struct weston_notification_area_notification));
+    if ( self == NULL )
+    {
         wl_resource_post_no_memory(surface_resource);
         return;
     }
-    notification->na = na;
 
-    notification->resource = wl_resource_create(client, &zww_notification_v1_interface, 1, id);
-    notification->surface = surface;
-    notification->view = weston_view_create(notification->surface);
+    self->na = na;
+    self->surface = surface;
 
-    wl_resource_set_implementation(notification->resource, &weston_notification_area_notification_implementation, notification, _weston_notification_area_notification_destroy);
+    self->view = weston_view_create(self->surface);
+    if ( self->view == NULL )
+    {
+        wl_resource_post_no_memory(surface_resource);
+        free(self);
+        return;
+    }
+
+    self->resource = wl_resource_create(client, &zww_notification_v1_interface, 1, id);
+    if ( self->resource == NULL )
+    {
+        wl_resource_post_no_memory(surface_resource);
+        weston_view_destroy(self->view);
+        free(self);
+        return;
+    }
+
+    wl_resource_set_implementation(self->resource, &weston_notification_area_notification_implementation, self, _weston_notification_area_notification_destroy);
 }
 
 static const struct zww_notification_area_v1_interface weston_notification_area_implementation = {
