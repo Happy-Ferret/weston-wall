@@ -166,7 +166,7 @@ _weston_notification_area_create_notification(struct wl_client *client, struct w
 }
 
 static const struct zww_notification_area_v1_interface weston_notification_area_implementation = {
-    .destroy = _weston_notification_area_destroy,
+    .destroy = _weston_notification_area_request_destroy,
     .create_notification = _weston_notification_area_create_notification,
 };
 
