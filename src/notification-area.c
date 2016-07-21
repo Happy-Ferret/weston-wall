@@ -80,6 +80,11 @@ _weston_notification_area_notification_request_move(struct wl_client *client, st
     x += self->na->workarea.x;
     y += self->na->workarea.y;
 
+    if ( ! weston_view_is_mapped(self->view) )
+    {
+        weston_layer_entry_insert(&self->na->layer.view_list, &self->view->layer_link);
+        self->view->is_mapped = true;
+    }
     weston_view_set_position(self->view, x, y);
     weston_view_update_transform(self->view);
     weston_surface_damage(self->surface);
@@ -128,7 +133,6 @@ _weston_notification_area_create_notification(struct wl_client *client, struct w
     notification->resource = wl_resource_create(client, &zww_notification_v1_interface, 1, id);
     notification->surface = surface;
     notification->view = weston_view_create(notification->surface);
-    weston_layer_entry_insert(&na->layer.view_list, &notification->view->layer_link);
 
     wl_resource_set_implementation(notification->resource, &weston_notification_area_notification_implementation, notification, _weston_notification_area_notification_destroy);
 }
