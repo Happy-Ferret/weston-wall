@@ -55,6 +55,7 @@ struct weston_notification_area_notification {
     struct weston_notification_area *na;
     struct weston_surface *surface;
     struct weston_view *view;
+    struct wl_listener view_destroy_listener;
 };
 
 static void
@@ -88,6 +89,15 @@ _weston_notification_area_notification_request_move(struct wl_client *client, st
     weston_view_set_position(self->view, x, y);
     weston_view_update_transform(self->view);
     weston_surface_damage(self->surface);
+}
+
+static void
+_weston_notification_area_notification_view_destroyed(struct wl_listener *listener, void *data)
+{
+    struct weston_notification_area_notification *self = wl_container_of(listener, self, view_destroy_listener);
+
+    weston_view_damage_below(self->view);
+    self->view = NULL;
 }
 
 static const struct zww_notification_v1_interface weston_notification_area_notification_implementation = {
@@ -150,6 +160,8 @@ _weston_notification_area_create_notification(struct wl_client *client, struct w
         return;
     }
 
+    self->view_destroy_listener.notify = _weston_notification_area_notification_view_destroyed;
+    wl_signal_add(&self->view->destroy_signal, &self->view_destroy_listener);
     wl_resource_set_implementation(self->resource, &weston_notification_area_notification_implementation, self, _weston_notification_area_notification_destroy);
 }
 
