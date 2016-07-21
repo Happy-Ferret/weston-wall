@@ -110,15 +110,8 @@ _weston_notification_area_notification_destroy(struct wl_resource *resource)
 {
     struct weston_notification_area_notification *self = wl_resource_get_user_data(resource);
 
-    self->resource = NULL;
-}
-
-static void
-_weston_notification_area_destroy(struct wl_client *client, struct wl_resource *resource)
-{
-    struct weston_notification_area_notification *self = wl_resource_get_user_data(resource);
-
-    weston_view_destroy(self->view);
+    if ( self->view != NULL )
+        weston_view_destroy(self->view);
 
     free(self);
 }
