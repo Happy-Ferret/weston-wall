@@ -81,6 +81,30 @@ background_la_LIBADD = \
 
 background.la src/background.lo: src/unstable/background/background-unstable-v1-server-protocol.h
 
+# dock-manager
+westonmodule_LTLIBRARIES += dock-manager.la
+CLEANFILES += $(nodist_dock_manager_la_SOURCES)
+
+dock_manager_la_SOURCES = \
+	src/dock-manager.c \
+	$(null)
+
+nodist_dock_manager_la_SOURCES = \
+	src/unstable/dock-manager/dock-manager-unstable-v1-protocol.c \
+	src/unstable/dock-manager/dock-manager-unstable-v1-server-protocol.h \
+	$(null)
+
+dock_manager_la_LDFLAGS = \
+	$(AM_LDFLAGS) \
+	$(MODULES_LDFLAGS) \
+	$(null)
+
+dock_manager_la_LIBADD = \
+	$(WESTON_LIBS) \
+	$(null)
+
+dock-manager.la src/dock-manager.lo: src/unstable/dock-manager/dock-manager-unstable-v1-server-protocol.h
+
 
 # Wayland protocol code generation rules
 src/%-protocol.c: $(wwprotocoldir)/%.xml
