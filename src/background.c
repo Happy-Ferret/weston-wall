@@ -126,6 +126,7 @@ retry:
     weston_view_set_position(self->view, x, y);
 
     weston_surface_damage(self->surface);
+    weston_compositor_schedule_repaint(self->surface->compositor);
 }
 
 static void
@@ -154,6 +155,7 @@ _weston_background_output_view_destroyed(struct wl_listener *listener, void *dat
 {
     struct weston_background_output *self = wl_container_of(listener, self, view_destroy_listener);
 
+    weston_view_damage_below(self->view);
     self->view = NULL;
 }
 
