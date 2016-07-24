@@ -150,11 +150,11 @@ _weston_dock_surface_configure(struct weston_surface *surface, int32_t sx, int32
     switch ( self->position )
     {
     case ZWW_DOCK_MANAGER_V1_POSITION_BOTTOM:
-        y += self->output->output->height;
+        y += self->output->output->height - self->surface->height;
     case ZWW_DOCK_MANAGER_V1_POSITION_TOP:
     break;
     case ZWW_DOCK_MANAGER_V1_POSITION_RIGHT:
-        x += self->output->output->width;
+        x += self->output->output->width - self->surface->width;
     case ZWW_DOCK_MANAGER_V1_POSITION_LEFT:
     break;
     case ZWW_DOCK_MANAGER_V1_POSITION_DEFAULT:
@@ -254,7 +254,7 @@ _weston_dock_manager_create_dock(struct wl_client *client, struct wl_resource *r
     }
 
     if ( position == ZWW_DOCK_MANAGER_V1_POSITION_DEFAULT )
-        position = ZWW_DOCK_MANAGER_V1_POSITION_TOP;
+        position = ZWW_DOCK_MANAGER_V1_POSITION_BOTTOM;
 
     self->dock_manager = dock_manager;
     self->output = output;
