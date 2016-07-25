@@ -66,8 +66,7 @@ background_la_SOURCES = \
 	$(null)
 
 nodist_background_la_SOURCES = \
-	src/unstable/background/background-unstable-v1-protocol.c \
-	src/unstable/background/background-unstable-v1-server-protocol.h \
+	src/unstable/background/background-unstable-v2-protocol.c \
 	$(null)
 
 background_la_LDFLAGS = \
@@ -79,7 +78,7 @@ background_la_LIBADD = \
 	$(WESTON_LIBS) \
 	$(null)
 
-background.la src/background.lo: src/unstable/background/background-unstable-v1-server-protocol.h
+background.la src/background.lo: src/unstable/background/background-unstable-v2-server-protocol.h
 
 # dock-manager
 westonmodule_LTLIBRARIES += dock-manager.la

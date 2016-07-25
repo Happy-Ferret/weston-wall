@@ -37,7 +37,7 @@
 
 #include <wayland-server.h>
 #include <compositor.h>
-#include "unstable/background/background-unstable-v1-server-protocol.h"
+#include "unstable/background/background-unstable-v2-server-protocol.h"
 
 #define MIN(a,b) (((a) < (b)) ? (a) : (b))
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
@@ -56,7 +56,6 @@ struct weston_background_output {
     struct weston_surface *surface;
     struct weston_view *view;
     struct weston_transform transform;
-    enum zww_background_v1_fit_method fit_method;
     struct wl_listener surface_destroy_listener;
     struct wl_listener view_destroy_listener;
 };
@@ -77,53 +76,8 @@ _weston_background_find_output(struct weston_background *back, struct weston_out
 static void
 _weston_background_output_update_transform(struct weston_background_output *self)
 {
-    float w, h;
-
-    weston_view_set_position(self->view, 0, 0);
-    weston_view_to_global_float(self->view, self->surface->width, self->surface->height, &w, &h);
-
-    enum zww_background_v1_fit_method fit_method = self->fit_method;
-retry:
-    switch ( fit_method )
-    {
-    case ZWW_BACKGROUND_V1_FIT_METHOD_DEFAULT:
-        if ( ( w > self->output->width ) || ( h > self->output->height ) )
-            fit_method = ZWW_BACKGROUND_V1_FIT_METHOD_SCALE;
-        else
-            fit_method = ZWW_BACKGROUND_V1_FIT_METHOD_CROP;
-        goto retry;
-    case ZWW_BACKGROUND_V1_FIT_METHOD_CROP:
-    {
-        int32_t x_offset = 0, y_offset = 0;
-        if ( w > self->output->width )
-            x_offset = ( w - self->output->width ) / 2;
-        if ( h > self->output->height )
-            y_offset = ( h - self->output->height ) / 2;
-        weston_view_set_mask(self->view, x_offset, y_offset, self->output->width, self->output->height);
-    }
-    break;
-    case ZWW_BACKGROUND_V1_FIT_METHOD_SCALE:
-    {
-        float sx, sy, s;
-
-        sx = (float) self->output->width / w;
-        sy = (float) self->output->height / h;
-        s = MIN(sx, sy);
-
-        weston_matrix_init(&self->transform.matrix);
-        weston_matrix_scale(&self->transform.matrix, s, s, 1);
-        wl_list_insert(&self->view->geometry.transformation_list, &self->transform.link);
-        weston_view_geometry_dirty(self->view);
-        weston_view_update_transform(self->view);
-        weston_view_to_global_float(self->view, self->surface->width, self->surface->height, &w, &h);
-    }
-    break;
-    }
-
-    float x = self->output->x + self->output->width / 2 - w / 2;
-    float y = self->output->y + self->output->height / 2 - h / 2;
-
-    weston_view_set_position(self->view, x, y);
+    weston_view_set_position(self->view, self->output->x, self->output->y);
+    weston_view_set_mask(self->view, 0, 0, self->output->width, self->output->height);
 
     weston_surface_damage(self->surface);
     weston_compositor_schedule_repaint(self->surface->compositor);
@@ -166,13 +120,13 @@ _weston_background_request_destroy(struct wl_client *client, struct wl_resource 
 }
 
 static void
-_weston_background_set_background(struct wl_client *client, struct wl_resource *resource, struct wl_resource *surface_resource, struct wl_resource *output_resource, enum zww_background_v1_fit_method fit_method)
+_weston_background_set_background(struct wl_client *client, struct wl_resource *resource, struct wl_resource *surface_resource, struct wl_resource *output_resource)
 {
     struct weston_background *back = wl_resource_get_user_data(resource);
     struct weston_surface *surface = wl_resource_get_user_data(surface_resource);
     struct weston_output *woutput = wl_resource_get_user_data(output_resource);
 
-    if ( weston_surface_set_role(surface, "ww_background", resource, ZWW_BACKGROUND_V1_ERROR_ROLE) < 0 )
+    if ( weston_surface_set_role(surface, "ww_background", resource, ZWW_BACKGROUND_V2_ERROR_ROLE) < 0 )
         return;
 
     struct weston_background_output *self = _weston_background_find_output(back, woutput);
@@ -198,7 +152,6 @@ _weston_background_set_background(struct wl_client *client, struct wl_resource *
 
     self->surface = surface;
     self->view = weston_view_create(self->surface);
-    self->fit_method = fit_method;
 
     wl_signal_add(&self->surface->destroy_signal, &self->surface_destroy_listener);
     wl_signal_add(&self->view->destroy_signal, &self->view_destroy_listener);
@@ -208,7 +161,7 @@ _weston_background_set_background(struct wl_client *client, struct wl_resource *
     _weston_background_output_update_transform(self);
 }
 
-static const struct zww_background_v1_interface weston_background_implementation = {
+static const struct zww_background_v2_interface weston_background_implementation = {
     .destroy = _weston_background_request_destroy,
     .set_background = _weston_background_set_background,
 };
@@ -227,12 +180,12 @@ _weston_background_bind(struct wl_client *client, void *data, uint32_t version, 
     struct weston_background *back = data;
     struct wl_resource *resource;
 
-    resource = wl_resource_create(client, &zww_background_v1_interface, version, id);
+    resource = wl_resource_create(client, &zww_background_v2_interface, version, id);
     wl_resource_set_implementation(resource, &weston_background_implementation, back, _weston_background_unbind);
 
     if ( back->binding != NULL )
     {
-        wl_resource_post_error(resource, ZWW_BACKGROUND_V1_ERROR_BOUND, "interface object already bound");
+        wl_resource_post_error(resource, ZWW_BACKGROUND_V2_ERROR_BOUND, "interface object already bound");
         wl_resource_destroy(resource);
         return;
     }
@@ -266,7 +219,7 @@ module_init(struct weston_compositor *compositor, int *argc, char *argv[])
 
     wl_list_init(&back->outputs);
 
-    if ( wl_global_create(back->compositor->wl_display, &zww_background_v1_interface, 1, back, _weston_background_bind) == NULL)
+    if ( wl_global_create(back->compositor->wl_display, &zww_background_v2_interface, 1, back, _weston_background_bind) == NULL)
         return -1;
 
     back->output_destroyed_listener.notify = _weston_background_output_destroyed;
