@@ -67,6 +67,7 @@ background_la_SOURCES = \
 
 nodist_background_la_SOURCES = \
 	src/unstable/background/background-unstable-v2-protocol.c \
+	src/unstable/background/background-unstable-v2-server-protocol.h \
 	$(null)
 
 background_la_LDFLAGS = \
@@ -89,8 +90,8 @@ dock_manager_la_SOURCES = \
 	$(null)
 
 nodist_dock_manager_la_SOURCES = \
-	src/unstable/dock-manager/dock-manager-unstable-v1-protocol.c \
-	src/unstable/dock-manager/dock-manager-unstable-v1-server-protocol.h \
+	src/unstable/dock-manager/dock-manager-unstable-v2-protocol.c \
+	src/unstable/dock-manager/dock-manager-unstable-v2-server-protocol.h \
 	$(null)
 
 dock_manager_la_LDFLAGS = \
@@ -102,7 +103,7 @@ dock_manager_la_LIBADD = \
 	$(WESTON_LIBS) \
 	$(null)
 
-dock-manager.la src/dock-manager.lo: src/unstable/dock-manager/dock-manager-unstable-v1-server-protocol.h
+dock-manager.la src/dock-manager.lo: src/unstable/dock-manager/dock-manager-unstable-v2-server-protocol.h
 
 
 # Wayland protocol code generation rules

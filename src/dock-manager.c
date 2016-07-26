@@ -37,7 +37,7 @@
 
 #include <wayland-server.h>
 #include <compositor.h>
-#include "unstable/dock-manager/dock-manager-unstable-v1-server-protocol.h"
+#include "unstable/dock-manager/dock-manager-unstable-v2-server-protocol.h"
 
 #define MIN(a,b) (((a) < (b)) ? (a) : (b))
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
@@ -60,7 +60,7 @@ struct weston_dock {
     struct wl_list link;
     struct weston_dock_manager *dock_manager;
     struct weston_dock_manager_output *output;
-    enum zww_dock_manager_v1_position position;
+    enum zww_dock_manager_v2_position position;
     struct wl_resource *resource;
     struct weston_surface *surface;
     struct weston_view *view;
@@ -109,17 +109,17 @@ _weston_dock_manager_output_get_workarea(struct weston_dock_manager_output *outp
     {
         switch ( dock->position )
         {
-        case ZWW_DOCK_MANAGER_V1_POSITION_TOP:
+        case ZWW_DOCK_MANAGER_V2_POSITION_TOP:
             area.y += dock->surface->height;
-        case ZWW_DOCK_MANAGER_V1_POSITION_BOTTOM:
+        case ZWW_DOCK_MANAGER_V2_POSITION_BOTTOM:
             area.height -= dock->surface->height;
         break;
-        case ZWW_DOCK_MANAGER_V1_POSITION_LEFT:
+        case ZWW_DOCK_MANAGER_V2_POSITION_LEFT:
             area.x += dock->surface->width;
-        case ZWW_DOCK_MANAGER_V1_POSITION_RIGHT:
+        case ZWW_DOCK_MANAGER_V2_POSITION_RIGHT:
             area.width -= dock->surface->width;
         break;
-        case ZWW_DOCK_MANAGER_V1_POSITION_DEFAULT:
+        case ZWW_DOCK_MANAGER_V2_POSITION_DEFAULT:
             assert(0 && "not reached");
         }
     }
@@ -149,15 +149,15 @@ _weston_dock_surface_configure(struct weston_surface *surface, int32_t sx, int32
 
     switch ( self->position )
     {
-    case ZWW_DOCK_MANAGER_V1_POSITION_BOTTOM:
+    case ZWW_DOCK_MANAGER_V2_POSITION_BOTTOM:
         y += self->output->output->height - self->surface->height;
-    case ZWW_DOCK_MANAGER_V1_POSITION_TOP:
+    case ZWW_DOCK_MANAGER_V2_POSITION_TOP:
     break;
-    case ZWW_DOCK_MANAGER_V1_POSITION_RIGHT:
+    case ZWW_DOCK_MANAGER_V2_POSITION_RIGHT:
         x += self->output->output->width - self->surface->width;
-    case ZWW_DOCK_MANAGER_V1_POSITION_LEFT:
+    case ZWW_DOCK_MANAGER_V2_POSITION_LEFT:
     break;
-    case ZWW_DOCK_MANAGER_V1_POSITION_DEFAULT:
+    case ZWW_DOCK_MANAGER_V2_POSITION_DEFAULT:
         assert(0 && "not reached");
     }
 
@@ -170,19 +170,19 @@ _weston_dock_surface_configure(struct weston_surface *surface, int32_t sx, int32
 
         switch ( dock->position )
         {
-        case ZWW_DOCK_MANAGER_V1_POSITION_TOP:
+        case ZWW_DOCK_MANAGER_V2_POSITION_TOP:
             y += dock->surface->height;
         break;
-        case ZWW_DOCK_MANAGER_V1_POSITION_BOTTOM:
+        case ZWW_DOCK_MANAGER_V2_POSITION_BOTTOM:
             y -= dock->surface->height;
         break;
-        case ZWW_DOCK_MANAGER_V1_POSITION_LEFT:
+        case ZWW_DOCK_MANAGER_V2_POSITION_LEFT:
             x += dock->surface->width;
         break;
-        case ZWW_DOCK_MANAGER_V1_POSITION_RIGHT:
+        case ZWW_DOCK_MANAGER_V2_POSITION_RIGHT:
             x -= dock->surface->width;
         break;
-        case ZWW_DOCK_MANAGER_V1_POSITION_DEFAULT:
+        case ZWW_DOCK_MANAGER_V2_POSITION_DEFAULT:
             assert(0 && "not reached");
         }
     }
@@ -217,12 +217,12 @@ _ww_dock_destroy(struct wl_resource *resource)
     free(self);
 }
 
-static const struct zww_dock_v1_interface _ww_dock_interface = {
+static const struct zww_dock_v2_interface _ww_dock_interface = {
     .destroy = _weston_dock_manager_request_destroy,
 };
 
 static void
-_weston_dock_manager_create_dock(struct wl_client *client, struct wl_resource *resource, uint32_t id, struct wl_resource *surface_resource, struct wl_resource *output_resource, enum zww_dock_manager_v1_position position)
+_weston_dock_manager_create_dock(struct wl_client *client, struct wl_resource *resource, uint32_t id, struct wl_resource *surface_resource, struct wl_resource *output_resource, enum zww_dock_manager_v2_position position)
 {
     struct weston_dock_manager *dock_manager = wl_resource_get_user_data(resource);
     struct weston_surface *surface = wl_resource_get_user_data(surface_resource);
@@ -236,7 +236,7 @@ _weston_dock_manager_create_dock(struct wl_client *client, struct wl_resource *r
     else
         woutput = wl_container_of(dock_manager->compositor->output_list.prev, woutput, link);
 
-    if ( weston_surface_set_role(surface, "ww_dock", resource, ZWW_DOCK_MANAGER_V1_ERROR_ROLE) < 0 )
+    if ( weston_surface_set_role(surface, "ww_dock", resource, ZWW_DOCK_MANAGER_V2_ERROR_ROLE) < 0 )
         return;
 
     output = _weston_dock_manager_find_output(dock_manager, woutput);
@@ -253,8 +253,8 @@ _weston_dock_manager_create_dock(struct wl_client *client, struct wl_resource *r
         return;
     }
 
-    if ( position == ZWW_DOCK_MANAGER_V1_POSITION_DEFAULT )
-        position = ZWW_DOCK_MANAGER_V1_POSITION_BOTTOM;
+    if ( position == ZWW_DOCK_MANAGER_V2_POSITION_DEFAULT )
+        position = ZWW_DOCK_MANAGER_V2_POSITION_BOTTOM;
 
     self->dock_manager = dock_manager;
     self->output = output;
@@ -268,7 +268,7 @@ _weston_dock_manager_create_dock(struct wl_client *client, struct wl_resource *r
         return;
     }
 
-    self->resource = wl_resource_create(client, &zww_dock_v1_interface, wl_resource_get_version(resource), id);
+    self->resource = wl_resource_create(client, &zww_dock_v2_interface, wl_resource_get_version(resource), id);
     if ( self->resource == NULL )
     {
         wl_client_post_no_memory(client);
@@ -286,12 +286,12 @@ _weston_dock_manager_create_dock(struct wl_client *client, struct wl_resource *r
     wl_signal_add(&self->view->destroy_signal, &self->view_destroy_listener);
 
     area = _weston_dock_manager_output_get_workarea(output);
-    zww_dock_v1_send_configure(self->resource, 1, 1, area.width - area.x, area.height - area.y, position);
+    zww_dock_v2_send_configure(self->resource, 1, 1, area.width - area.x, area.height - area.y, position);
 
     wl_list_insert(&self->output->docks, &self->link);
 }
 
-static const struct zww_dock_manager_v1_interface weston_dock_manager_implementation = {
+static const struct zww_dock_manager_v2_interface weston_dock_manager_implementation = {
     .destroy = _weston_dock_manager_request_destroy,
     .create_dock = _weston_dock_manager_create_dock,
 };
@@ -317,7 +317,7 @@ _weston_dock_manager_bind(struct wl_client *client, void *data, uint32_t version
     struct weston_dock_manager *self = data;
     struct wl_resource *resource;
 
-    resource = wl_resource_create(client, &zww_dock_manager_v1_interface, version, id);
+    resource = wl_resource_create(client, &zww_dock_manager_v2_interface, version, id);
     wl_resource_set_implementation(resource, &weston_dock_manager_implementation, self, _weston_dock_manager_unbind);
 
     wl_list_insert(&self->resource_list, wl_resource_get_link(resource));
@@ -350,7 +350,7 @@ module_init(struct weston_compositor *compositor, int *argc, char *argv[])
     wl_list_init(&self->resource_list);
     wl_list_init(&self->outputs);
 
-    if ( wl_global_create(self->compositor->wl_display, &zww_dock_manager_v1_interface, 1, self, _weston_dock_manager_bind) == NULL)
+    if ( wl_global_create(self->compositor->wl_display, &zww_dock_manager_v2_interface, 1, self, _weston_dock_manager_bind) == NULL)
         return -1;
 
     self->output_destroyed_listener.notify = _weston_dock_manager_output_destroyed;
