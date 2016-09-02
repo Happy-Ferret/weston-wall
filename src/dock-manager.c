@@ -286,7 +286,7 @@ _weston_dock_manager_create_dock(struct wl_client *client, struct wl_resource *r
     wl_signal_add(&self->view->destroy_signal, &self->view_destroy_listener);
 
     area = _weston_dock_manager_output_get_workarea(output);
-    zww_dock_v2_send_configure(self->resource, 1, 1, area.width - area.x, area.height - area.y, position);
+    zww_dock_v2_send_configure(self->resource, 1, 1, area.width, area.height, position);
 
     wl_list_insert(&self->output->docks, &self->link);
 }
