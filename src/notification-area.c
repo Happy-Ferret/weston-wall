@@ -170,9 +170,7 @@ _weston_notification_area_set_output(struct weston_notification_area *na, struct
     na->output = output;
     if ( na->output != NULL )
     {
-        if ( na->compositor->shell_interface.get_output_work_area != NULL )
-            na->compositor->shell_interface.get_output_work_area(na->compositor->shell_interface.shell, na->output, &workarea);
-        else
+        /* TODO: Support dock area API */
         {
             workarea.x = na->output->x;
             workarea.y = na->output->y;

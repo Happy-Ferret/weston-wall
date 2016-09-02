@@ -136,9 +136,9 @@ _weston_dock_manager_output_free(struct weston_dock_manager_output *self)
 }
 
 static void
-_weston_dock_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
+_weston_dock_surface_committed(struct weston_surface *surface, int32_t sx, int32_t sy)
 {
-    struct weston_dock *self = surface->configure_private, *dock;
+    struct weston_dock *self = surface->committed_private, *dock;
     int32_t x, y;
 
     if ( weston_view_is_mapped(self->view) )
@@ -279,8 +279,8 @@ _weston_dock_manager_create_dock(struct wl_client *client, struct wl_resource *r
 
     wl_resource_set_implementation(self->resource, &_ww_dock_interface, self, _ww_dock_destroy);
 
-    self->surface->configure = _weston_dock_surface_configure;
-    self->surface->configure_private = self;
+    self->surface->committed = _weston_dock_surface_committed;
+    self->surface->committed_private = self;
 
     self->view_destroy_listener.notify = _weston_dock_view_destroyed;
     wl_signal_add(&self->view->destroy_signal, &self->view_destroy_listener);
@@ -358,8 +358,7 @@ module_init(struct weston_compositor *compositor, int *argc, char *argv[])
 
     weston_layer_init(&self->layer, &self->compositor->cursor_layer.link);
 
-    compositor->shell_interface.shell = self;
-    compositor->shell_interface.get_output_work_area = _weston_dock_manager_get_output_work_area;
+    /* TODO: Add dock area API support */
 
     return 0;
 }

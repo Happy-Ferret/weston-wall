@@ -33,8 +33,9 @@ AM_LDFLAGS=""
 #
 # Dependencies
 #
-weston_min_version=1.11.90
-PKG_CHECK_MODULES([WESTON], [libweston-0 >= ${weston_min_version} pixman-1 wayland-wall wayland-server])
+weston_min_major=1
+weston_min_version=${weston_min_major}.11.92
+PKG_CHECK_MODULES([WESTON], [libweston-${weston_min_major} >= ${weston_min_version} pixman-1 wayland-wall wayland-server])
 
 AC_ARG_WITH([westonmoduledir], AS_HELP_STRING([--with-westonmoduledir=DIR], [Directory for Weston plugins]), [], [with_westonmoduledir=yes])
 case "${with_westonmoduledir}" in
