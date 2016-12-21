@@ -77,18 +77,25 @@ static void
 _weston_notification_area_notification_request_move(struct wl_client *client, struct wl_resource *resource, int32_t x, int32_t y)
 {
     struct weston_notification_area_notification *self = wl_resource_get_user_data(resource);
+    int32_t dx, dy;
 
     x += self->na->workarea.x;
     y += self->na->workarea.y;
+    dx = self->view->geometry.x - x;
+    dy = self->view->geometry.y - y;
+
+    weston_view_set_position(self->view, x, y);
+    weston_view_update_transform(self->view);
+    weston_surface_damage(self->surface);
 
     if ( ! weston_view_is_mapped(self->view) )
     {
         weston_layer_entry_insert(&self->na->layer.view_list, &self->view->layer_link);
         self->view->is_mapped = true;
+        weston_fade_run(self->view, 0, 1, 400.0, NULL, NULL);
     }
-    weston_view_set_position(self->view, x, y);
-    weston_view_update_transform(self->view);
-    weston_surface_damage(self->surface);
+    else
+        weston_move_run(self->view, dx, dy, 0, 1, true, NULL, NULL);
 }
 
 static void
@@ -96,6 +103,7 @@ _weston_notification_area_notification_view_destroyed(struct wl_listener *listen
 {
     struct weston_notification_area_notification *self = wl_container_of(listener, self, view_destroy_listener);
 
+    wl_list_remove(&self->view_destroy_listener.link);
     weston_view_damage_below(self->view);
     self->view = NULL;
 }
@@ -106,14 +114,20 @@ static const struct zww_notification_v1_interface weston_notification_area_notif
 };
 
 static void
+_weston_notification_area_notification_fade_out_done(struct weston_view_animation *animation, void *data)
+{
+    struct weston_notification_area_notification *self = data;
+
+    weston_surface_destroy(self->surface);
+    free(self);
+}
+
+static void
 _weston_notification_area_notification_destroy(struct wl_resource *resource)
 {
     struct weston_notification_area_notification *self = wl_resource_get_user_data(resource);
 
-    if ( self->view != NULL )
-        weston_view_destroy(self->view);
-
-    free(self);
+    weston_fade_run(self->view, 1, 0, 400.0, _weston_notification_area_notification_fade_out_done, self);
 }
 
 static void
@@ -153,6 +167,7 @@ _weston_notification_area_create_notification(struct wl_client *client, struct w
         return;
     }
 
+    ++self->surface->ref_count;
     self->view_destroy_listener.notify = _weston_notification_area_notification_view_destroyed;
     wl_signal_add(&self->view->destroy_signal, &self->view_destroy_listener);
     wl_resource_set_implementation(self->resource, &weston_notification_area_notification_implementation, self, _weston_notification_area_notification_destroy);
