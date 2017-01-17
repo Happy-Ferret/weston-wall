@@ -285,7 +285,8 @@ module_init(struct weston_compositor *compositor, int *argc, char *argv[])
     if ( wl_global_create(na->compositor->wl_display, &zww_notification_area_v1_interface, 1, na, _weston_notification_area_bind) == NULL)
         return -1;
 
-    weston_layer_init(&na->layer, &na->compositor->cursor_layer.link);
+    weston_layer_init(&na->layer, na->compositor);
+    weston_layer_set_position(&na->layer, WESTON_LAYER_POSITION_UI);
 
     return 0;
 }
