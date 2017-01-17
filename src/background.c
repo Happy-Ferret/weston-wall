@@ -225,17 +225,8 @@ module_init(struct weston_compositor *compositor, int *argc, char *argv[])
     back->output_destroyed_listener.notify = _weston_background_output_destroyed;
     wl_signal_add(&back->compositor->output_destroyed_signal, &back->output_destroyed_listener);
 
-    /*
-     * Assuming we are loaded after the shell:
-     * 2 layers in compositor internals
-     * 4 layers in the shell
-     *
-     * This is a hack, but for now we have nothing better.
-     */
-    if ( wl_list_length(&compositor->layer_list) < 6 )
-        weston_layer_init(&back->layer, compositor->layer_list.prev);
-    else
-        weston_layer_init(&back->layer, compositor->layer_list.prev->prev);
+    weston_layer_init(&back->layer, back->compositor);
+    weston_layer_set_position(&back->layer, WESTON_LAYER_POSITION_BACKGROUND);
 
     return 0;
 }
