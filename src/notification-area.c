@@ -265,7 +265,7 @@ _weston_notification_area_output_moved(struct wl_listener *listener, void *data)
 }
 
 WW_EXPORT int
-module_init(struct weston_compositor *compositor, int *argc, char *argv[])
+wet_module_init(struct weston_compositor *compositor, int *argc, char *argv[])
 {
     struct weston_notification_area *na;
 
