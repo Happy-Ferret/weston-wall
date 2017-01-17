@@ -356,7 +356,8 @@ module_init(struct weston_compositor *compositor, int *argc, char *argv[])
     self->output_destroyed_listener.notify = _weston_dock_manager_output_destroyed;
     wl_signal_add(&self->compositor->output_destroyed_signal, &self->output_destroyed_listener);
 
-    weston_layer_init(&self->layer, &self->compositor->cursor_layer.link);
+    weston_layer_init(&self->layer, self->compositor);
+    weston_layer_set_position(&self->layer, WESTON_LAYER_POSITION_UI);
 
     /* TODO: Add dock area API support */
 
