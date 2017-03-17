@@ -44,7 +44,7 @@ struct weston_notification_area {
     struct wl_resource *binding;
     struct weston_layer layer;
     struct weston_output *output;
-    pixman_rectangle32_t workarea;
+    struct weston_geometry workarea;
     struct wl_listener output_created_listener;
     struct wl_listener output_destroyed_listener;
     struct wl_listener output_moved_listener;
@@ -181,7 +181,7 @@ static const struct zww_notification_area_v1_interface weston_notification_area_
 static void
 _weston_notification_area_set_output(struct weston_notification_area *na, struct weston_output *output)
 {
-    pixman_rectangle32_t workarea = { 0, 0, 0, 0 };
+    struct weston_geometry workarea = { 0, 0, 0, 0 };
     na->output = output;
     if ( na->output != NULL )
     {

@@ -94,11 +94,11 @@ _weston_dock_manager_find_output(struct weston_dock_manager *dock_manager, struc
     return self;
 }
 
-static pixman_rectangle32_t
+static struct weston_geometry
 _weston_dock_manager_output_get_workarea(struct weston_dock_manager_output *output)
 {
     struct weston_dock *dock;
-    pixman_rectangle32_t area = {
+    struct weston_geometry area = {
         .x = output->output->x,
         .y = output->output->y,
         .width = output->output->width,
@@ -229,7 +229,7 @@ _weston_dock_manager_create_dock(struct wl_client *client, struct wl_resource *r
     struct weston_output *woutput = NULL;
     struct weston_dock_manager_output *output;
     struct weston_dock *self;
-    pixman_rectangle32_t area;
+    struct weston_geometry area;
 
     if ( output_resource != NULL )
         woutput = wl_resource_get_user_data(output_resource);
@@ -297,7 +297,7 @@ static const struct zww_dock_manager_v2_interface weston_dock_manager_implementa
 };
 
 static void
-_weston_dock_manager_get_output_work_area(void *data, struct weston_output *woutput, pixman_rectangle32_t *area)
+_weston_dock_manager_get_output_work_area(void *data, struct weston_output *woutput, struct weston_geometry *area)
 {
     struct weston_dock_manager *self = data;
     struct weston_dock_manager_output *output = _weston_dock_manager_find_output(self, woutput);
