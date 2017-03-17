@@ -24,6 +24,7 @@ AM_CPPFLAGS += \
 
 AM_CFLAGS += \
 	$(WESTON_CFLAGS) \
+	$(WAYLAND_CFLAGS) \
 	$(null)
 
 MODULES_LDFLAGS = \
@@ -53,6 +54,7 @@ notification_area_la_LDFLAGS = \
 
 notification_area_la_LIBADD = \
 	$(WESTON_LIBS) \
+	$(WAYLAND_LIBS) \
 	$(null)
 
 notification-area.la src/notification-area.lo: src/unstable/notification-area/notification-area-unstable-v1-server-protocol.h
@@ -77,6 +79,7 @@ background_la_LDFLAGS = \
 
 background_la_LIBADD = \
 	$(WESTON_LIBS) \
+	$(WAYLAND_LIBS) \
 	$(null)
 
 background.la src/background.lo: src/unstable/background/background-unstable-v2-server-protocol.h
@@ -101,6 +104,7 @@ dock_manager_la_LDFLAGS = \
 
 dock_manager_la_LIBADD = \
 	$(WESTON_LIBS) \
+	$(WAYLAND_LIBS) \
 	$(null)
 
 dock-manager.la src/dock-manager.lo: src/unstable/dock-manager/dock-manager-unstable-v2-server-protocol.h
