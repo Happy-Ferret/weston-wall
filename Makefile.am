@@ -109,6 +109,31 @@ dock_manager_la_LIBADD = \
 
 dock-manager.la src/dock-manager.lo: src/unstable/dock-manager/dock-manager-unstable-v2-server-protocol.h
 
+# launcher-menu
+westonmodule_LTLIBRARIES += launcher-menu.la
+CLEANFILES += $(nodist_launcher_menu_la_SOURCES)
+
+launcher_menu_la_SOURCES = \
+	src/launcher-menu.c \
+	$(null)
+
+nodist_launcher_menu_la_SOURCES = \
+	src/unstable/launcher-menu/launcher-menu-unstable-v1-protocol.c \
+	src/unstable/launcher-menu/launcher-menu-unstable-v1-server-protocol.h \
+	$(null)
+
+launcher_menu_la_LDFLAGS = \
+	$(AM_LDFLAGS) \
+	$(MODULES_LDFLAGS) \
+	$(null)
+
+launcher_menu_la_LIBADD = \
+	$(WESTON_LIBS) \
+	$(WAYLAND_LIBS) \
+	$(null)
+
+launcher-menu.la src/launcher-menu.lo: src/unstable/launcher-menu/launcher-menu-unstable-v1-server-protocol.h
+
 
 # Wayland protocol code generation rules
 src/%-protocol.c: $(wwprotocoldir)/%.xml
