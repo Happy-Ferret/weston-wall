@@ -32,9 +32,9 @@ AM_LDFLAGS=""
 AC_DEFUN([WW_CHECK_WESTON], [
     m4_ifnblank([$1], [
         m4_ifblank([$2], [
-            PKG_CHECK_MODULES([WESTON], [libweston-$1 >= ${weston_min_version}])
+            PKG_CHECK_MODULES([WESTON], [libweston-$1 >= ${weston_min_version}], [weston_major=$1])
         ], [
-            PKG_CHECK_MODULES([WESTON], [libweston-$1 >= ${weston_min_version}], [], [WW_CHECK_WESTON(m4_shift($@))])
+            PKG_CHECK_MODULES([WESTON], [libweston-$1 >= ${weston_min_version}], [weston_major=$1], [WW_CHECK_WESTON(m4_shift($@))])
         ])
     ])
 ])
@@ -45,6 +45,7 @@ AC_DEFUN([WW_CHECK_WESTON], [
 m4_define([weston_supported_majors], [3, 2])
 weston_min_version=1.12.90
 WW_CHECK_WESTON(weston_supported_majors)
+PKG_CHECK_MODULES([WESTON_DESKTOP], [libweston-desktop-${weston_major}])
 PKG_CHECK_MODULES([WAYLAND_WALL], [wayland-wall])
 PKG_CHECK_MODULES([WAYLAND], [wayland-server])
 

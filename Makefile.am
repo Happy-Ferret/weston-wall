@@ -23,6 +23,7 @@ AM_CPPFLAGS += \
 	$(null)
 
 AM_CFLAGS += \
+	$(WESTON_DESKTOP_CFLAGS) \
 	$(WESTON_CFLAGS) \
 	$(WAYLAND_CFLAGS) \
 	$(null)
@@ -133,6 +134,32 @@ launcher_menu_la_LIBADD = \
 	$(null)
 
 launcher-menu.la src/launcher-menu.lo: src/unstable/launcher-menu/launcher-menu-unstable-v1-server-protocol.h
+
+# window-switcher
+westonmodule_LTLIBRARIES += window-switcher.la
+CLEANFILES += $(nodist_window_switcher_la_SOURCES)
+
+window_switcher_la_SOURCES = \
+	src/window-switcher.c \
+	$(null)
+
+nodist_window_switcher_la_SOURCES = \
+	src/unstable/window-switcher/window-switcher-unstable-v1-protocol.c \
+	src/unstable/window-switcher/window-switcher-unstable-v1-server-protocol.h \
+	$(null)
+
+window_switcher_la_LDFLAGS = \
+	$(AM_LDFLAGS) \
+	$(MODULES_LDFLAGS) \
+	$(null)
+
+window_switcher_la_LIBADD = \
+	$(WESTON_DESKTOP_LIBS) \
+	$(WESTON_LIBS) \
+	$(WAYLAND_LIBS) \
+	$(null)
+
+window-switcher.la src/window-switcher.lo: src/unstable/window-switcher/window-switcher-unstable-v1-server-protocol.h
 
 
 # Wayland protocol code generation rules
